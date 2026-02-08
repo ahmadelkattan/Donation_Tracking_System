@@ -1,0 +1,187 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { LayoutWrapper } from '@/components/LayoutWrapper'
+import { Toast } from '@/components/Toast'
+import { useToastMessage } from '@/hooks/useToastMessage'
+import { getInstapayEntries, getCashEntries } from '@/lib/api'
+import { LogOut, X, Loader2 } from 'lucide-react'
+import Image from 'next/image'
+
+interface InstapayEntry {
+  id: string
+  amount: number
+  image_url: string
+  created_at: string
+}
+
+interface CashEntry {
+  id: string
+  amount: number
+  note: string | null
+  created_at: string
+}
+
+export default function ProfilePage() {
+  const [username, setUsername] = useState<string | null>(null)
+  const [instapayEntries, setInstapayEntries] = useState<InstapayEntry[]>([])
+  const [cashEntries, setCashEntries] = useState<CashEntry[]>([])
+  const [loading, setLoading] = useState(true)
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  const router = useRouter()
+  const { toasts, addToast, removeToast } = useToastMessage()
+
+  useEffect(() => {
+    const stored = localStorage.getItem('username')
+    if (!stored) {
+      router.push('/login')
+    } else {
+      setUsername(stored)
+    }
+  }, [router])
+
+  useEffect(() => {
+    if (!username) return
+
+    const fetchData = async () => {
+      setLoading(true)
+      try {
+        const [instapay, cash] = await Promise.all([
+          getInstapayEntries(username),
+          getCashEntries(username),
+        ])
+        setInstapayEntries(instapay)
+        setCashEntries(cash)
+      } catch (error) {
+        console.error(error)
+        addToast('Error loading profile', 'error')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [username, addToast])
+
+  const handleLogout = () => {
+    localStorage.removeItem('username')
+    router.push('/login')
+  }
+
+  if (!username) return null
+
+  return (
+    <LayoutWrapper username={username} showNav={true}>
+      <div className="flex-1 flex flex-col p-4 gap-6 overflow-y-auto">
+        <div className="space-y-2">
+          <h1 className="text-2xl font-bold">{username}</h1>
+          <p className="text-muted-foreground">Your account details</p>
+        </div>
+
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 size={40} className="animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <>
+            {/* Instapay Gallery */}
+            {instapayEntries.length > 0 && (
+              <div className="space-y-3">
+                <h2 className="text-lg font-semibold">Instapay Payments</h2>
+                <div className="grid grid-cols-3 gap-2">
+                  {instapayEntries.map((entry) => (
+                    <button
+                      key={entry.id}
+                      onClick={() => setSelectedImage(entry.image_url)}
+                      className="relative aspect-square rounded overflow-hidden border border-border hover:border-primary transition"
+                    >
+                      <Image
+                        src={entry.image_url || "/placeholder.svg"}
+                        alt="Payment"
+                        fill
+                        className="object-cover hover:scale-110 transition"
+                      />
+                      <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition flex items-center justify-center">
+                        <span className="text-white font-semibold text-sm opacity-0 hover:opacity-100 transition">
+                          ${entry.amount.toFixed(2)}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Cash Entries */}
+            {cashEntries.length > 0 && (
+              <div className="space-y-3">
+                <h2 className="text-lg font-semibold">Cash Donations</h2>
+                <div className="space-y-2">
+                  {cashEntries.map((entry) => (
+                    <div
+                      key={entry.id}
+                      className="bg-card border border-border rounded-lg p-3 space-y-1"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold">${entry.amount.toFixed(2)}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(entry.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                      {entry.note && (
+                        <p className="text-sm text-muted-foreground">{entry.note}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {instapayEntries.length === 0 && cashEntries.length === 0 && (
+              <div className="text-center py-12 text-muted-foreground">
+                <p>No donations yet</p>
+              </div>
+            )}
+          </>
+        )}
+
+        <Button
+          onClick={handleLogout}
+          variant="destructive"
+          className="w-full flex items-center justify-center gap-2"
+        >
+          <LogOut size={20} />
+          Logout
+        </Button>
+      </div>
+
+      {/* Image Modal */}
+      {selectedImage && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div className="relative w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="absolute top-2 right-2 bg-white rounded-full p-1 hover:bg-gray-100"
+            >
+              <X size={20} className="text-black" />
+            </button>
+            <Image
+              src={selectedImage || "/placeholder.svg"}
+              alt="Full size"
+              width={500}
+              height={500}
+              className="w-full rounded"
+            />
+          </div>
+        </div>
+      )}
+
+      <Toast toasts={toasts} onRemove={removeToast} />
+    </LayoutWrapper>
+  )
+}
