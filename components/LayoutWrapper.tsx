@@ -5,7 +5,7 @@ import React from "react"
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { Home, LogOut, User } from 'lucide-react'
+import { Home, LogOut, User, Plus } from 'lucide-react'
 
 interface LayoutWrapperProps {
   children: React.ReactNode
@@ -28,9 +28,12 @@ export function LayoutWrapper({
             <Link href="/dashboard" className="p-2 hover:bg-accent rounded-xl transition-colors hover:text-primary">
               <Home size={24} />
             </Link>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
               <h1 className="text-lg font-semibold">{username}</h1>
+              <Link href="/add" className="p-2 hover:bg-accent rounded-xl transition-colors hover:text-primary">
+                <Plus size={24} />
+              </Link>
             </div>
             <Link href="/profile" className="p-2 hover:bg-accent rounded-xl transition-colors hover:text-primary">
               <User size={24} />
