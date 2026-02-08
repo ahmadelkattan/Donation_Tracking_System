@@ -57,19 +57,22 @@ export default function AdminPage() {
 
   return (
     <LayoutWrapper username={username} showNav={false}>
-      <div className="flex-1 flex flex-col p-4 gap-4 overflow-hidden">
-        <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+      <div className="flex-1 flex flex-col p-4 gap-5 overflow-hidden bg-background">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+          <p className="text-muted-foreground">Manage orders, adjustments and view overview</p>
+        </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 border-b border-border">
+        <div className="flex gap-1 border-b border-border bg-card rounded-t-lg px-4 -mx-4 mb-2">
           {(['orders', 'adjustments', 'overview'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 font-medium text-sm transition border-b-2 ${
+              className={`px-4 py-3 font-medium text-sm transition rounded-t-lg ${
                 activeTab === tab
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
+                  ? 'bg-background text-primary border-b-2 border-primary'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
               }`}
             >
               {tab === 'orders' && 'Meal Orders'}
@@ -93,7 +96,7 @@ export default function AdminPage() {
         <Button
           onClick={handleLogout}
           variant="destructive"
-          className="w-full flex items-center justify-center gap-2"
+          className="w-full flex items-center justify-center gap-2 rounded-xl"
         >
           <LogOut size={20} />
           Logout

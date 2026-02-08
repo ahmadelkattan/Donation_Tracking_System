@@ -24,25 +24,29 @@ export default function AddPage() {
 
   return (
     <LayoutWrapper username={username} showNav={true}>
-      <div className="flex-1 flex flex-col items-center justify-center p-4 gap-6">
+      <div className="flex-1 flex flex-col items-center justify-center p-4 gap-8 bg-background">
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold">Add Money</h1>
-          <p className="text-muted-foreground">Choose how you're donating</p>
+          <h1 className="text-3xl font-bold">Add Donation</h1>
+          <p className="text-muted-foreground">Choose your preferred payment method</p>
         </div>
 
-        <div className="w-full space-y-4 max-w-xs">
+        <div className="w-full space-y-3 max-w-xs">
           <Link href="/add/instapay" className="block">
-            <Button variant="outline" className="w-full h-20 flex flex-col items-center gap-2 bg-transparent">
-              <CreditCard size={28} />
-              <span className="text-base font-semibold">Add Instapay</span>
-            </Button>
+            <div className="bg-gradient-to-br from-primary/10 to-secondary/10 border border-primary/20 rounded-2xl p-6 flex flex-col items-center gap-3 hover:shadow-lg hover:border-primary/40 transition-all group cursor-pointer">
+              <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                <CreditCard size={24} />
+              </div>
+              <span className="text-base font-semibold group-hover:text-primary transition-colors">Add via Instapay</span>
+            </div>
           </Link>
 
           <Link href="/add/cash" className="block">
-            <Button variant="outline" className="w-full h-20 flex flex-col items-center gap-2 bg-transparent">
-              <Wallet size={28} />
-              <span className="text-base font-semibold">Add Cash</span>
-            </Button>
+            <div className="bg-gradient-to-br from-secondary/10 to-primary/10 border border-secondary/20 rounded-2xl p-6 flex flex-col items-center gap-3 hover:shadow-lg hover:border-secondary/40 transition-all group cursor-pointer">
+              <div className="w-12 h-12 bg-gradient-to-br from-secondary to-primary rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                <Wallet size={24} />
+              </div>
+              <span className="text-base font-semibold group-hover:text-secondary transition-colors">Add Cash Donation</span>
+            </div>
           </Link>
         </div>
       </div>

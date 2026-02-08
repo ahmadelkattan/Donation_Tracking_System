@@ -81,109 +81,101 @@ export default function DashboardPage() {
 
   return (
     <LayoutWrapper username={username} showNav={true}>
-      <div className="flex-1 flex flex-col p-4 gap-6 overflow-y-auto">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
+      <div className="flex-1 flex flex-col p-4 gap-8 overflow-y-auto bg-background">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+          <p className="text-muted-foreground">Track your donations and payments</p>
+        </div>
 
         {loading ? (
           <div className="flex-1 flex items-center justify-center">
-            <Loader2 size={40} className="animate-spin text-muted-foreground" />
+            <Loader2 size={40} className="animate-spin text-primary" />
           </div>
         ) : (
           <>
-            {/* Overall Summary */}
+            {/* Key Metrics Section */}
             {overall && (
-              <div className="space-y-3">
-                <h2 className="text-lg font-semibold">Total Collected</h2>
-                <div className="bg-card border border-border rounded-lg p-6 space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">Instapay</span>
-                    <span className="font-semibold text-lg">${overall.instapay_total.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">Cash</span>
-                    <span className="font-semibold text-lg">${overall.cash_total.toFixed(2)}</span>
-                  </div>
-                  <div className="border-t border-border pt-3 flex justify-between items-center">
-                    <span className="font-semibold">Total</span>
-                    <span className="font-bold text-xl">
-                      ${overall.total_collected.toFixed(2)}
-                    </span>
+              <div className="grid gap-4">
+                {/* Remaining Balance - Highlighted */}
+                <div className="bg-gradient-to-br from-primary to-secondary text-primary-foreground rounded-xl p-6 shadow-md">
+                  <div className="text-sm font-medium opacity-90 mb-2">Remaining Balance</div>
+                  <div className="text-4xl font-bold mb-3">${overall.remaining_balance.toFixed(2)}</div>
+                  <div className="text-sm opacity-80">≈ {mealsAffordable} meals at avg price ${avgSupplierPrice.toFixed(2)}</div>
+                </div>
+
+                {/* Total Collected */}
+                <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+                  <div className="text-sm font-semibold text-muted-foreground mb-4">Total Collected</div>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">Instapay</span>
+                      <span className="font-semibold text-lg">${overall.instapay_total.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">Cash</span>
+                      <span className="font-semibold text-lg">${overall.cash_total.toFixed(2)}</span>
+                    </div>
+                    <div className="border-t border-border pt-3 flex justify-between items-center">
+                      <span className="font-semibold">Total</span>
+                      <span className="font-bold text-lg text-primary">
+                        ${overall.total_collected.toFixed(2)}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Remaining Balance */}
-            {overall && (
-              <div className="space-y-3">
-                <h2 className="text-lg font-semibold">Remaining Balance</h2>
-                <div className="bg-card border border-border rounded-lg p-6 space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">Balance</span>
-                    <span className="font-bold text-2xl text-primary">
-                      ${overall.remaining_balance.toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    ≈ {mealsAffordable} meals at avg price ${avgSupplierPrice.toFixed(2)}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Suppliers */}
+            {/* Suppliers Section */}
             {suppliers.length > 0 && (
-              <div className="space-y-3">
-                <h2 className="text-lg font-semibold">Suppliers</h2>
-                <div className="grid gap-2">
+              <div className="space-y-4">
+                <h2 className="text-xl font-semibold">Suppliers</h2>
+                <div className="grid gap-3">
                   {suppliers.map((supplier) => (
                     <Link
                       key={supplier.supplier_id}
                       href={`/pay/${supplier.supplier_id}`}
                     >
-                      <Button
-                        variant="outline"
-                        className="w-full h-auto px-4 py-3 flex items-center justify-between hover:bg-accent bg-transparent"
-                      >
-                        <span className="font-medium">{supplier.name}</span>
-                        <span className="text-lg font-semibold">
+                      <div className="bg-card border border-border rounded-xl p-4 flex items-center justify-between hover:shadow-md hover:border-primary transition-all group">
+                        <span className="font-medium group-hover:text-primary transition-colors">{supplier.name}</span>
+                        <span className="text-lg font-bold text-primary">
                           ${supplier.remaining_to_pay.toFixed(2)}
                         </span>
-                      </Button>
+                      </div>
                     </Link>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Users */}
+            {/* Users Section */}
             {users.length > 0 && (
-              <div className="space-y-3">
-                <h2 className="text-lg font-semibold">User Balances</h2>
-                <div className="space-y-2">
+              <div className="space-y-4">
+                <h2 className="text-xl font-semibold">User Balances</h2>
+                <div className="grid gap-3">
                   {users.map((user) => (
                     <div
                       key={user.username}
-                      className="bg-card border border-border rounded-lg p-3"
+                      className="bg-card border border-border rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-medium">{user.username}</span>
-                        <span className={user.user_balance >= 0 ? 'text-green-600' : 'text-red-600'}>
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="font-semibold">{user.username}</span>
+                        <span className={`text-lg font-bold ${user.user_balance >= 0 ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'}`}>
                           ${user.user_balance.toFixed(2)}
                         </span>
                       </div>
-                      <div className="text-xs text-muted-foreground space-y-1">
-                        <div className="flex justify-between">
-                          <span>Instapay:</span>
-                          <span>${user.instapay_total.toFixed(2)}</span>
+                      <div className="grid grid-cols-3 gap-3 pt-3 border-t border-border">
+                        <div>
+                          <div className="text-xs text-muted-foreground mb-1">Instapay</div>
+                          <div className="font-semibold text-sm">${user.instapay_total.toFixed(2)}</div>
                         </div>
-                        <div className="flex justify-between">
-                          <span>Cash:</span>
-                          <span>${user.cash_total.toFixed(2)}</span>
+                        <div>
+                          <div className="text-xs text-muted-foreground mb-1">Cash</div>
+                          <div className="font-semibold text-sm">${user.cash_total.toFixed(2)}</div>
                         </div>
-                        <div className="flex justify-between">
-                          <span>Paid to suppliers:</span>
-                          <span>${user.total_paid_to_suppliers.toFixed(2)}</span>
+                        <div>
+                          <div className="text-xs text-muted-foreground mb-1">Paid</div>
+                          <div className="font-semibold text-sm">${user.total_paid_to_suppliers.toFixed(2)}</div>
                         </div>
                       </div>
                     </div>

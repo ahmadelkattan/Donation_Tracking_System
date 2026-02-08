@@ -7,8 +7,8 @@ const _geist = Geist({ subsets: ['latin'] })
 const _geistMono = Geist_Mono({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
+  title: 'InstaPay - Donation Tracking System',
+  description: 'Track donations and manage supplier payments efficiently',
   generator: 'v0.app',
 }
 

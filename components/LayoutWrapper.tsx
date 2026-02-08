@@ -23,13 +23,16 @@ export function LayoutWrapper({
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       {showNav && username && (
-        <header className="bg-card border-b border-border sticky top-0 z-10">
+        <header className="bg-card/80 backdrop-blur-sm border-b border-border/50 sticky top-0 z-10 shadow-sm">
           <div className="flex items-center justify-between p-4 max-w-md mx-auto w-full">
-            <Link href="/dashboard" className="p-2 hover:bg-accent rounded-lg transition">
+            <Link href="/dashboard" className="p-2 hover:bg-accent rounded-xl transition-colors hover:text-primary">
               <Home size={24} />
             </Link>
-            <h1 className="text-lg font-semibold">{username}</h1>
-            <Link href="/profile" className="p-2 hover:bg-accent rounded-lg transition">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+              <h1 className="text-lg font-semibold">{username}</h1>
+            </div>
+            <Link href="/profile" className="p-2 hover:bg-accent rounded-xl transition-colors hover:text-primary">
               <User size={24} />
             </Link>
           </div>

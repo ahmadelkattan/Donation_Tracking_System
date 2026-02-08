@@ -84,39 +84,39 @@ export default function SupplierPage() {
 
   return (
     <LayoutWrapper username={username} showNav={false}>
-      <div className="flex-1 flex flex-col p-4 gap-8">
-        <div className="text-center space-y-2 pt-8">
+      <div className="flex-1 flex flex-col p-4 gap-8 bg-background">
+        <div className="text-center space-y-2 pt-6">
           <h1 className="text-3xl font-bold">{supplier.name}</h1>
-          <p className="text-muted-foreground">Supplier Dashboard</p>
+          <p className="text-muted-foreground">Supplier Account Dashboard</p>
         </div>
 
         {loading ? (
           <div className="flex-1 flex items-center justify-center">
-            <Loader2 size={40} className="animate-spin text-muted-foreground" />
+            <Loader2 size={40} className="animate-spin text-primary" />
           </div>
         ) : (
-          <div className="space-y-6 flex-1">
+          <div className="space-y-5 flex-1">
             {/* Financial Stats */}
-            <div className="space-y-3">
-              <div className="bg-card border border-border rounded-lg p-6">
-                <div className="text-muted-foreground text-sm mb-1">Total Owed</div>
-                <div className="text-4xl font-bold">${balance.owed_total.toFixed(2)}</div>
+            <div className="grid gap-4">
+              <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+                <div className="text-muted-foreground text-sm font-medium mb-2">Total Owed</div>
+                <div className="text-4xl font-bold text-foreground">${balance.owed_total.toFixed(2)}</div>
               </div>
 
-              <div className="bg-card border border-border rounded-lg p-6">
-                <div className="text-muted-foreground text-sm mb-1">Total Received</div>
-                <div className="text-4xl font-bold">${balance.paid_total.toFixed(2)}</div>
+              <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+                <div className="text-muted-foreground text-sm font-medium mb-2">Total Received</div>
+                <div className="text-4xl font-bold text-primary">${balance.paid_total.toFixed(2)}</div>
               </div>
 
-              <div className="bg-primary text-primary-foreground rounded-lg p-6">
-                <div className="text-sm mb-1 opacity-90">Remaining Balance</div>
+              <div className="bg-gradient-to-br from-primary to-secondary text-primary-foreground rounded-xl p-6 shadow-md">
+                <div className="text-sm font-medium mb-2 opacity-90">Remaining Balance</div>
                 <div className="text-4xl font-bold">${balance.remaining_to_pay.toFixed(2)}</div>
               </div>
             </div>
 
             {/* Schedule Button */}
             <Link href="/schedule" className="block">
-              <Button className="w-full h-12 text-base font-semibold flex items-center justify-center gap-2">
+              <Button className="w-full h-12 text-base font-semibold flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-secondary hover:shadow-lg transition-all">
                 <Calendar size={20} />
                 View Schedule
               </Button>
@@ -127,7 +127,7 @@ export default function SupplierPage() {
         <Button
           onClick={handleLogout}
           variant="destructive"
-          className="w-full flex items-center justify-center gap-2 mt-auto"
+          className="w-full flex items-center justify-center gap-2 rounded-xl"
         >
           <LogOut size={20} />
           Logout
