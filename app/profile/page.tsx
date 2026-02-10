@@ -7,7 +7,7 @@ import { LayoutWrapper } from '@/components/LayoutWrapper'
 import { Toast } from '@/components/Toast'
 import { useToastMessage } from '@/hooks/useToastMessage'
 import { getInstapayEntries, getCashEntries } from '@/lib/api'
-import { LogOut, X, Loader2 } from 'lucide-react'
+import { LogOut, X, Loader2, ChevronDown } from 'lucide-react'
 import Image from 'next/image'
 
 interface InstapayEntry {
@@ -30,6 +30,8 @@ export default function ProfilePage() {
   const [cashEntries, setCashEntries] = useState<CashEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  const [expandedInstapay, setExpandedInstapay] = useState(false)
+  const [expandedCash, setExpandedCash] = useState(false)
   const router = useRouter()
   const { toasts, addToast, removeToast } = useToastMessage()
 
@@ -89,53 +91,75 @@ export default function ProfilePage() {
             {/* Instapay Gallery */}
             {instapayEntries.length > 0 && (
               <div className="space-y-3">
-                <h2 className="text-lg font-semibold">Instapay Payments</h2>
-                <div className="grid grid-cols-3 gap-2">
-                  {instapayEntries.map((entry) => (
-                    <button
-                      key={entry.id}
-                      onClick={() => setSelectedImage(entry.image_url)}
-                      className="relative aspect-square rounded overflow-hidden border border-border hover:border-primary transition"
-                    >
-                      <Image
-                        src={entry.image_url || "/placeholder.svg"}
-                        alt="Payment"
-                        fill
-                        className="object-cover hover:scale-110 transition"
-                      />
-                      <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition flex items-center justify-center">
-                        <span className="text-white font-semibold text-sm opacity-0 hover:opacity-100 transition">
-                          ${entry.amount.toFixed(2)}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
+                <button
+                  onClick={() => setExpandedInstapay(!expandedInstapay)}
+                  className="flex items-center gap-2 w-full hover:text-primary transition-colors"
+                >
+                  <ChevronDown
+                    size={24}
+                    className={`transition-transform duration-200 ${expandedInstapay ? 'rotate-180' : ''}`}
+                  />
+                  <h2 className="text-lg font-semibold">Instapay Payments</h2>
+                </button>
+                {expandedInstapay && (
+                  <div className="grid grid-cols-3 gap-2">
+                    {instapayEntries.map((entry) => (
+                      <button
+                        key={entry.id}
+                        onClick={() => setSelectedImage(entry.image_url)}
+                        className="relative aspect-square rounded-xl overflow-hidden border border-border hover:border-primary transition"
+                      >
+                        <Image
+                          src={entry.image_url || "/placeholder.svg"}
+                          alt="Payment"
+                          fill
+                          className="object-cover hover:scale-110 transition"
+                        />
+                        <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition flex items-center justify-center">
+                          <span className="text-white font-semibold text-sm opacity-0 hover:opacity-100 transition">
+                            ${entry.amount.toFixed(2)}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
             {/* Cash Entries */}
             {cashEntries.length > 0 && (
               <div className="space-y-3">
-                <h2 className="text-lg font-semibold">Cash Donations</h2>
-                <div className="space-y-2">
-                  {cashEntries.map((entry) => (
-                    <div
-                      key={entry.id}
-                      className="bg-card border border-border rounded-lg p-3 space-y-1"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold">${entry.amount.toFixed(2)}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {new Date(entry.created_at).toLocaleDateString()}
-                        </span>
+                <button
+                  onClick={() => setExpandedCash(!expandedCash)}
+                  className="flex items-center gap-2 w-full hover:text-primary transition-colors"
+                >
+                  <ChevronDown
+                    size={24}
+                    className={`transition-transform duration-200 ${expandedCash ? 'rotate-180' : ''}`}
+                  />
+                  <h2 className="text-lg font-semibold">Cash Donations</h2>
+                </button>
+                {expandedCash && (
+                  <div className="space-y-2">
+                    {cashEntries.map((entry) => (
+                      <div
+                        key={entry.id}
+                        className="bg-card border border-border rounded-xl p-4 space-y-1 shadow-sm"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold">${entry.amount.toFixed(2)}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(entry.created_at).toLocaleDateString()}
+                          </span>
+                        </div>
+                        {entry.note && (
+                          <p className="text-sm text-muted-foreground">{entry.note}</p>
+                        )}
                       </div>
-                      {entry.note && (
-                        <p className="text-sm text-muted-foreground">{entry.note}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
