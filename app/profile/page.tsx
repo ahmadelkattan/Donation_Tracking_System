@@ -80,9 +80,9 @@ export default function ProfilePage() {
 
   return (
     <LayoutWrapper username={username} showNav={true}>
-      <div className="flex-1 flex flex-col p-4 gap-6 overflow-y-auto">
-        <div className="space-y-2">
-          <h1 className="text-2xl font-bold">{username}</h1>
+      <div className="flex-1 flex flex-col p-4 gap-8 overflow-y-auto bg-background">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold">{username}</h1>
           <p className="text-muted-foreground">Your account details</p>
         </div>
 
@@ -97,13 +97,16 @@ export default function ProfilePage() {
               <div className="space-y-3">
                 <button
                   onClick={() => setExpandedInstapay(!expandedInstapay)}
-                  className="flex items-center gap-2 w-full hover:text-primary transition-colors"
+                  className="flex items-center gap-3 w-full px-4 py-3 rounded-xl bg-card border border-border hover:bg-card/80 hover:border-primary hover:shadow-md transition-all group"
                 >
                   <ChevronDown
                     size={24}
-                    className={`transition-transform duration-200 ${expandedInstapay ? 'rotate-180' : ''}`}
+                    className={`transition-transform duration-200 text-primary ${expandedInstapay ? 'rotate-180' : ''}`}
                   />
-                  <h2 className="text-lg font-semibold">Instapay Payments</h2>
+                  <h2 className="text-lg font-semibold group-hover:text-primary transition-colors">Instapay Payments</h2>
+                  <span className="ml-auto text-sm text-muted-foreground bg-muted rounded-full px-3 py-1 group-hover:bg-primary/10 transition-colors">
+                    {instapayEntries.length}
+                  </span>
                 </button>
                 {expandedInstapay && (
                   <div className="grid grid-cols-3 gap-2">
@@ -136,13 +139,16 @@ export default function ProfilePage() {
               <div className="space-y-3">
                 <button
                   onClick={() => setExpandedCash(!expandedCash)}
-                  className="flex items-center gap-2 w-full hover:text-primary transition-colors"
+                  className="flex items-center gap-3 w-full px-4 py-3 rounded-xl bg-card border border-border hover:bg-card/80 hover:border-primary hover:shadow-md transition-all group"
                 >
                   <ChevronDown
                     size={24}
-                    className={`transition-transform duration-200 ${expandedCash ? 'rotate-180' : ''}`}
+                    className={`transition-transform duration-200 text-primary ${expandedCash ? 'rotate-180' : ''}`}
                   />
-                  <h2 className="text-lg font-semibold">Cash Donations</h2>
+                  <h2 className="text-lg font-semibold group-hover:text-primary transition-colors">Cash Donations</h2>
+                  <span className="ml-auto text-sm text-muted-foreground bg-muted rounded-full px-3 py-1 group-hover:bg-primary/10 transition-colors">
+                    {cashEntries.length}
+                  </span>
                 </button>
                 {expandedCash && (
                   <div className="space-y-2">
@@ -172,13 +178,16 @@ export default function ProfilePage() {
               <div className="space-y-3">
                 <button
                   onClick={() => setExpandedPayments(!expandedPayments)}
-                  className="flex items-center gap-2 w-full hover:text-primary transition-colors"
+                  className="flex items-center gap-3 w-full px-4 py-3 rounded-xl bg-card border border-border hover:bg-card/80 hover:border-primary hover:shadow-md transition-all group"
                 >
                   <ChevronDown
                     size={24}
-                    className={`transition-transform duration-200 ${expandedPayments ? 'rotate-180' : ''}`}
+                    className={`transition-transform duration-200 text-primary ${expandedPayments ? 'rotate-180' : ''}`}
                   />
-                  <h2 className="text-lg font-semibold">Payments</h2>
+                  <h2 className="text-lg font-semibold group-hover:text-primary transition-colors">Payments</h2>
+                  <span className="ml-auto text-sm text-muted-foreground bg-muted rounded-full px-3 py-1 group-hover:bg-primary/10 transition-colors">
+                    {payments.length}
+                  </span>
                 </button>
                 {expandedPayments && (
                   <div className="space-y-2">
@@ -218,7 +227,7 @@ export default function ProfilePage() {
         <Button
           onClick={handleLogout}
           variant="destructive"
-          className="w-full flex items-center justify-center gap-2"
+          className="w-full flex items-center justify-center gap-2 rounded-xl mt-4"
         >
           <LogOut size={20} />
           Logout
