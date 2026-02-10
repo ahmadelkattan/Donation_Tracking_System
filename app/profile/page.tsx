@@ -97,7 +97,7 @@ export default function ProfilePage() {
               <div className="space-y-3">
                 <button
                   onClick={() => setExpandedInstapay(!expandedInstapay)}
-                  className="flex items-center gap-3 w-full px-4 py-3 rounded-xl bg-card border border-border hover:bg-card/80 hover:border-primary hover:shadow-md transition-all group"
+                  className="flex items-center gap-3 w-full px-4 py-3 rounded-xl bg-muted/50 border border-border hover:bg-muted/70 hover:border-primary hover:shadow-md transition-all group"
                 >
                   <ChevronDown
                     size={24}
@@ -139,7 +139,7 @@ export default function ProfilePage() {
               <div className="space-y-3">
                 <button
                   onClick={() => setExpandedCash(!expandedCash)}
-                  className="flex items-center gap-3 w-full px-4 py-3 rounded-xl bg-card border border-border hover:bg-card/80 hover:border-primary hover:shadow-md transition-all group"
+                  className="flex items-center gap-3 w-full px-4 py-3 rounded-xl bg-muted/50 border border-border hover:bg-muted/70 hover:border-primary hover:shadow-md transition-all group"
                 >
                   <ChevronDown
                     size={24}
@@ -178,7 +178,7 @@ export default function ProfilePage() {
               <div className="space-y-3">
                 <button
                   onClick={() => setExpandedPayments(!expandedPayments)}
-                  className="flex items-center gap-3 w-full px-4 py-3 rounded-xl bg-card border border-border hover:bg-card/80 hover:border-primary hover:shadow-md transition-all group"
+                  className="flex items-center gap-3 w-full px-4 py-3 rounded-xl bg-muted/50 border border-border hover:bg-muted/70 hover:border-primary hover:shadow-md transition-all group"
                 >
                   <ChevronDown
                     size={24}
