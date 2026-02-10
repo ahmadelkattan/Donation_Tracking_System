@@ -13,7 +13,6 @@ import { extractAmountFromImage } from '@/lib/extractAmount'
 import { X, Upload } from 'lucide-react'
 import Image from 'next/image'
 
-
 interface ImageItem {
   file: File
   preview: string
@@ -39,62 +38,27 @@ export default function AddInstapayPage() {
     }
   }, [router])
 
-  // const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-  //   const files = Array.from(event.target.files || [])
-  //   setExtracting(true)
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || [])
-    if (!files.length) return
-
     setExtracting(true)
 
-    // Add placeholders immediately for instant UI
-    const placeholders: ImageItem[] = files.map((file) => ({
-      file,
-      preview: URL.createObjectURL(file),
-      amount: null,
-      manualAmount: '',
-    }))
+    const newImages: ImageItem[] = []
 
-    setImages((prev) => [...prev, ...placeholders])
+    for (const file of files) {
+      const preview = URL.createObjectURL(file)
+      const amount = await extractAmountFromImage(file)
 
-    // Limit concurrency for mobile stability
-    const CONCURRENCY = 2
-    let next = 0
-
-    const runOne = async (): Promise<void> => {
-      const i = next++
-      if (i >= placeholders.length) return
-
-      const item = placeholders[i]
-      const detected = await extractAmountFromImage(item.file)
-
-      setImages((prev) => {
-        const updated = [...prev]
-        const idx = updated.findIndex((x) => x.preview === item.preview)
-        if (idx !== -1) {
-          updated[idx].amount = detected
-          updated[idx].manualAmount = detected ? String(detected) : ''
-        }
-        return updated
+      newImages.push({
+        file,
+        preview,
+        amount,
+        manualAmount: amount ? amount.toString() : '',
       })
-
-      await runOne()
     }
 
-    await Promise.all(
-        Array.from(
-            { length: Math.min(CONCURRENCY, placeholders.length) },
-            () => runOne()
-        )
-    )
-
+    setImages((prev) => [...prev, ...newImages])
     setExtracting(false)
-
-    // Reset input so selecting the same files again triggers onChange
-    if (fileInputRef.current) fileInputRef.current.value = ''
   }
-
 
   const removeImage = (index: number) => {
     setImages((prev) => {
@@ -165,100 +129,100 @@ export default function AddInstapayPage() {
   if (!username) return null
 
   return (
-    <LayoutWrapper username={username} showNav={true}>
-      <div className="flex-1 flex flex-col p-4 gap-4">
-        <h1 className="text-2xl font-bold">Add Instapay Payment</h1>
+      <LayoutWrapper username={username} showNav={true}>
+        <div className="flex-1 flex flex-col p-4 gap-3">
+          <h1 className="text-2xl font-bold">Add Instapay Payment</h1>
 
-        <div className="flex-1">
-          {images.length === 0 ? (
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="w-full h-40 border-2 border-dashed border-border rounded-lg flex items-center justify-center hover:border-primary transition cursor-pointer bg-muted"
-            >
-              <div className="text-center">
-                <Upload size={40} className="mx-auto mb-2 text-muted-foreground" />
-                <p className="text-sm font-medium">
-                  {extracting ? 'Processing...' : 'Click to select images'}
-                </p>
-                <p className="text-xs text-muted-foreground">or drag and drop</p>
-              </div>
-            </button>
-          ) : (
-            <div className="space-y-4">
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="w-full py-2 border border-dashed border-border rounded-lg hover:border-primary transition text-sm font-medium"
-                disabled={extracting}
-              >
-                {extracting ? 'Processing...' : 'Add more images'}
-              </button>
-
-              <div className="space-y-3">
-                {images.map((image, index) => (
-                  <div
-                    key={index}
-                    className="border border-border rounded-lg p-3 space-y-3 bg-card"
-                  >
-                    <div className="flex gap-3">
-                      <div className="relative w-20 h-20 flex-shrink-0">
-                        <Image
-                          src={image.preview || "/placeholder.svg"}
-                          alt={`Payment ${index + 1}`}
-                          fill
-                          className="object-cover rounded"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <label className="block text-sm font-medium mb-1">
-                          Amount ({index + 1})
-                        </label>
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={image.manualAmount}
-                          onChange={(e) => updateAmount(index, e.target.value)}
-                          placeholder="Enter amount"
-                          className="w-full px-3 py-2 border border-input rounded text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                        />
-                        {!image.manualAmount && !extracting && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Couldn&apos;t detect amount — please enter manually
-                            </p>
-                        )}
-                      </div>
-                      <button
-                        onClick={() => removeImage(index)}
-                        className="mt-5 p-1 hover:bg-destructive hover:text-white rounded transition"
-                      >
-                        <X size={20} />
-                      </button>
-                    </div>
+          <div className="flex-1 overflow-y-auto">
+            {images.length === 0 ? (
+                <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full h-40 border-2 border-dashed border-border rounded-lg flex items-center justify-center hover:border-primary transition cursor-pointer bg-muted"
+                >
+                  <div className="text-center">
+                    <Upload size={40} className="mx-auto mb-2 text-muted-foreground" />
+                    <p className="text-sm font-medium">
+                      {extracting ? 'Processing...' : 'Click to select images'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">or drag and drop</p>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
+                </button>
+            ) : (
+                <div className="space-y-4">
+                  <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full py-2 border border-dashed border-border rounded-lg hover:border-primary transition text-sm font-medium"
+                      disabled={extracting}
+                  >
+                    {extracting ? 'Processing...' : 'Add more images'}
+                  </button>
+
+                  <div className="space-y-3">
+                    {images.map((image, index) => (
+                        <div
+                            key={index}
+                            className="border border-border rounded-lg p-3 space-y-3 bg-card"
+                        >
+                          <div className="flex gap-3">
+                            <div className="relative w-20 h-20 flex-shrink-0">
+                              <Image
+                                  src={image.preview || "/placeholder.svg"}
+                                  alt={`Payment ${index + 1}`}
+                                  fill
+                                  className="object-cover rounded"
+                              />
+                            </div>
+                            <div className="flex-1">
+                              <label className="block text-sm font-medium mb-1">
+                                Amount ({index + 1})
+                              </label>
+                              <input
+                                  type="number"
+                                  step="0.01"
+                                  value={image.manualAmount}
+                                  onChange={(e) => updateAmount(index, e.target.value)}
+                                  placeholder="Enter amount"
+                                  className="w-full px-3 py-2 border border-input rounded text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                              />
+                              {!image.manualAmount && (
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    OCR detection returned null - please enter manually
+                                  </p>
+                              )}
+                            </div>
+                            <button
+                                onClick={() => removeImage(index)}
+                                className="mt-5 p-1 hover:bg-destructive hover:text-white rounded transition"
+                            >
+                              <X size={20} />
+                            </button>
+                          </div>
+                        </div>
+                    ))}
+                  </div>
+                </div>
+            )}
+          </div>
+
+          <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleFileSelect}
+              className="hidden"
+          />
+
+          <Button
+              onClick={handleSubmit}
+              disabled={loading || images.length === 0}
+              className="w-full h-10 text-sm font-semibold flex-shrink-0"
+          >
+            {loading ? 'Uploading...' : `Confirm & Upload (${images.length})`}
+          </Button>
         </div>
 
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          accept="image/*"
-          onChange={handleFileSelect}
-          className="hidden"
-        />
-
-        <Button
-          onClick={handleSubmit}
-          disabled={loading || images.length === 0}
-          className="w-full h-12 text-base font-semibold"
-        >
-          {loading ? 'Uploading...' : `Confirm & Upload (${images.length})`}
-        </Button>
-      </div>
-
-      <Toast toasts={toasts} onRemove={removeToast} />
-    </LayoutWrapper>
+        <Toast toasts={toasts} onRemove={removeToast} />
+      </LayoutWrapper>
   )
 }
