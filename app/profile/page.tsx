@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { LayoutWrapper } from '@/components/LayoutWrapper'
 import { Toast } from '@/components/Toast'
 import { useToastMessage } from '@/hooks/useToastMessage'
-import { getInstapayEntries, getCashEntries } from '@/lib/api'
+import { getInstapayEntries, getCashEntries, getPaymentsMadeByUser, type UserPaymentLog } from '@/lib/api'
 import { LogOut, X, Loader2, ChevronDown } from 'lucide-react'
 import Image from 'next/image'
 
@@ -28,10 +28,12 @@ export default function ProfilePage() {
   const [username, setUsername] = useState<string | null>(null)
   const [instapayEntries, setInstapayEntries] = useState<InstapayEntry[]>([])
   const [cashEntries, setCashEntries] = useState<CashEntry[]>([])
+  const [payments, setPayments] = useState<UserPaymentLog[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [expandedInstapay, setExpandedInstapay] = useState(false)
   const [expandedCash, setExpandedCash] = useState(false)
+  const [expandedPayments, setExpandedPayments] = useState(false)
   const router = useRouter()
   const { toasts, addToast, removeToast } = useToastMessage()
 
@@ -50,12 +52,14 @@ export default function ProfilePage() {
     const fetchData = async () => {
       setLoading(true)
       try {
-        const [instapay, cash] = await Promise.all([
+        const [instapay, cash, payLog] = await Promise.all([
           getInstapayEntries(username),
           getCashEntries(username),
+          getPaymentsMadeByUser(username),
         ])
         setInstapayEntries(instapay)
         setCashEntries(cash)
+        setPayments(payLog)
       } catch (error) {
         console.error(error)
         addToast('Error loading profile', 'error')
@@ -163,9 +167,49 @@ export default function ProfilePage() {
               </div>
             )}
 
-            {instapayEntries.length === 0 && cashEntries.length === 0 && (
+            {/* Payments made by this user */}
+            {payments.length > 0 && (
+              <div className="space-y-3">
+                <button
+                  onClick={() => setExpandedPayments(!expandedPayments)}
+                  className="flex items-center gap-2 w-full hover:text-primary transition-colors"
+                >
+                  <ChevronDown
+                    size={24}
+                    className={`transition-transform duration-200 ${expandedPayments ? 'rotate-180' : ''}`}
+                  />
+                  <h2 className="text-lg font-semibold">Payments</h2>
+                </button>
+                {expandedPayments && (
+                  <div className="space-y-2">
+                    {payments.map((p) => (
+                      <div
+                        key={p.id}
+                        className="bg-card border border-border rounded-xl p-4 space-y-1 shadow-sm"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold">${Number(p.amount).toFixed(2)}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(p.created_at).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          <span className="font-medium text-foreground">{p.method}</span>
+                          {' • '}
+                          <span>
+                            to <span className="font-medium text-foreground">{p.supplier_name}</span>
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {instapayEntries.length === 0 && cashEntries.length === 0 && payments.length === 0 && (
               <div className="text-center py-12 text-muted-foreground">
-                <p>No donations yet</p>
+                <p>No activity yet</p>
               </div>
             )}
           </>
