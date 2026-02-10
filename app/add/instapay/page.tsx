@@ -130,10 +130,10 @@ export default function AddInstapayPage() {
 
   return (
     <LayoutWrapper username={username} showNav={true}>
-      <div className="flex-1 flex flex-col p-4 gap-4">
+      <div className="flex-1 flex flex-col p-4 gap-3">
         <h1 className="text-2xl font-bold">Add Instapay Payment</h1>
 
-        <div className="flex-1">
+        <div className="flex-1 overflow-y-auto">
           {images.length === 0 ? (
             <button
               onClick={() => fileInputRef.current?.click()}
@@ -216,7 +216,7 @@ export default function AddInstapayPage() {
         <Button
           onClick={handleSubmit}
           disabled={loading || images.length === 0}
-          className="w-full h-12 text-base font-semibold"
+          className="w-full h-10 text-sm font-semibold flex-shrink-0"
         >
           {loading ? 'Uploading...' : `Confirm & Upload (${images.length})`}
         </Button>
