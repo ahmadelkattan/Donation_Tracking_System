@@ -54,8 +54,8 @@ export default function LoginPage() {
           <div className="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl mx-auto flex items-center justify-center shadow-lg">
             <div className="text-2xl font-bold text-primary-foreground">💙</div>
           </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">InstaPay</h1>
-          <p className="text-muted-foreground">Donation Tracking System</p>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Donation Tracking System</h1>
+          <p className="text-muted-foreground">Kol sana wento tayebin :)</p>
         </div>
 
         <div className="bg-card rounded-2xl border border-border p-8 shadow-md space-y-5">

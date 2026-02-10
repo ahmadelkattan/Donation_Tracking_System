@@ -78,6 +78,74 @@ export async function getOverall(): Promise<OverallStats | null> {
   return data
 }
 
+export async function getSupplierBalanceById(supplierId: string) {
+  const { data, error } = await supabase
+      .from('v_supplier_balance')
+      .select('*')
+      .eq('supplier_id', supplierId)
+      .single()
+
+  if (error) {
+    console.error('Error fetching supplier balance:', error)
+    return null
+  }
+  return data
+}
+
+export interface SupplierPaymentLog {
+  payment_date: string // date
+  payment_datetime: string // timestamp
+  supplier_name: string
+  supplier_id: string
+  paid_by_username: string
+  method: 'instapay' | 'cash'
+  amount: number
+  note?: string | null
+  image_url?: string | null
+}
+
+export async function getPaymentsForSupplier(
+    supplierName: string
+): Promise<SupplierPaymentLog[]> {
+  const { data, error } = await supabase
+      .from('v_supplier_payments_log')
+      .select('*')
+      .eq('supplier_name', supplierName)
+      .order('payment_datetime', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching supplier payments:', error)
+    return []
+  }
+  return data || []
+}
+
+export interface UserPaymentLog {
+  id: string
+  created_at: string
+  amount: number
+  method: 'instapay' | 'cash'
+  supplier_id: string
+  supplier_name: string
+  note?: string | null
+  image_url?: string | null
+}
+
+export async function getPaymentsMadeByUser(username: string): Promise<UserPaymentLog[]> {
+  const { data, error } = await supabase
+      .from('v_user_payments_log')
+      .select('*')
+      .eq('paid_by_username', username)
+      .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching user payments:', error)
+    return []
+  }
+
+  return data || []
+}
+
 export async function getUserFinancials(): Promise<UserFinancials[]> {
   const { data, error } = await supabase.from('v_user_financials').select('*')
 
@@ -280,9 +348,9 @@ export async function uploadImage(
   const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD
   const random = Math.random().toString(36).substring(2, 10)
   const fileName = `${today}/${random}.jpg`
-  const filePath = `instapay/${username}/${fileName}`
+  const filePath = `${username}/${fileName}`
 
-  const { error } = await supabase.storage.from('instapay').upload(filePath, file)
+  const { error } = await supabase.storage.from('Instapay').upload(filePath, file)
 
   if (error) {
     console.error('Error uploading image:', error)
@@ -292,7 +360,7 @@ export async function uploadImage(
   // Get public URL
   const {
     data: { publicUrl },
-  } = supabase.storage.from('instapay').getPublicUrl(filePath)
+  } = supabase.storage.from('Instapay').getPublicUrl(filePath)
 
   return publicUrl
 }

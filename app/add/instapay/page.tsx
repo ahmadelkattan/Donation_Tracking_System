@@ -13,6 +13,7 @@ import { extractAmountFromImage } from '@/lib/extractAmount'
 import { X, Upload } from 'lucide-react'
 import Image from 'next/image'
 
+
 interface ImageItem {
   file: File
   preview: string
@@ -38,27 +39,62 @@ export default function AddInstapayPage() {
     }
   }, [router])
 
+  // const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   const files = Array.from(event.target.files || [])
+  //   setExtracting(true)
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || [])
+    if (!files.length) return
+
     setExtracting(true)
 
-    const newImages: ImageItem[] = []
+    // Add placeholders immediately for instant UI
+    const placeholders: ImageItem[] = files.map((file) => ({
+      file,
+      preview: URL.createObjectURL(file),
+      amount: null,
+      manualAmount: '',
+    }))
 
-    for (const file of files) {
-      const preview = URL.createObjectURL(file)
-      const amount = await extractAmountFromImage(file)
+    setImages((prev) => [...prev, ...placeholders])
 
-      newImages.push({
-        file,
-        preview,
-        amount,
-        manualAmount: amount ? amount.toString() : '',
+    // Limit concurrency for mobile stability
+    const CONCURRENCY = 2
+    let next = 0
+
+    const runOne = async (): Promise<void> => {
+      const i = next++
+      if (i >= placeholders.length) return
+
+      const item = placeholders[i]
+      const detected = await extractAmountFromImage(item.file)
+
+      setImages((prev) => {
+        const updated = [...prev]
+        const idx = updated.findIndex((x) => x.preview === item.preview)
+        if (idx !== -1) {
+          updated[idx].amount = detected
+          updated[idx].manualAmount = detected ? String(detected) : ''
+        }
+        return updated
       })
+
+      await runOne()
     }
 
-    setImages((prev) => [...prev, ...newImages])
+    await Promise.all(
+        Array.from(
+            { length: Math.min(CONCURRENCY, placeholders.length) },
+            () => runOne()
+        )
+    )
+
     setExtracting(false)
+
+    // Reset input so selecting the same files again triggers onChange
+    if (fileInputRef.current) fileInputRef.current.value = ''
   }
+
 
   const removeImage = (index: number) => {
     setImages((prev) => {
@@ -184,10 +220,10 @@ export default function AddInstapayPage() {
                           placeholder="Enter amount"
                           className="w-full px-3 py-2 border border-input rounded text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                         />
-                        {!image.manualAmount && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            OCR detection returned null - please enter manually
-                          </p>
+                        {!image.manualAmount && !extracting && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Couldn&apos;t detect amount — please enter manually
+                            </p>
                         )}
                       </div>
                       <button

@@ -11,6 +11,8 @@ import { useToastMessage } from '@/hooks/useToastMessage'
 import { getSuppliers, addSupplierPayment, uploadImage } from '@/lib/api'
 import { ArrowLeft, X, Upload } from 'lucide-react'
 import Image from 'next/image'
+import { extractAmountFromImage } from '@/lib/extractAmount'
+
 
 interface Supplier {
   id: string
@@ -50,14 +52,23 @@ export default function PaySupplierPage() {
     fetchSupplier()
   }, [supplierId])
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
-    if (file) {
-      setImage(file)
-      const preview = URL.createObjectURL(file)
-      setImagePreview(preview)
+    if (!file) return
+
+    setImage(file)
+    const preview = URL.createObjectURL(file)
+    setImagePreview(preview)
+
+    // auto-detect amount
+    try {
+      const detected = await extractAmountFromImage(file)
+      if (detected) setAmount(String(detected))
+    } catch (e) {
+      console.error(e)
     }
   }
+
 
   const removeImage = () => {
     if (imagePreview) {
@@ -136,7 +147,7 @@ export default function PaySupplierPage() {
 
         {/* Method Selection */}
         <div className="space-y-3">
-          <label className="block text-sm font-medium">Payment Method</label>
+          <label className="block text-sm font-medium">Pay From Which Balance</label>
           <div className="flex gap-2">
             <button
               onClick={() => setMethod('instapay')}
