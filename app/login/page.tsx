@@ -35,7 +35,7 @@ export default function LoginPage() {
       // Route based on username
       if (username === 'Admin') {
         router.push('/admin')
-      } else if (username === 'elsheikh' || username === '3askary') {
+      } else if (username === 'elsheikh' || username === '3askary' || username === 'Shamel') {
         router.push('/supplier')
       } else {
         router.push('/add')
