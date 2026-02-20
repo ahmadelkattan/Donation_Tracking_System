@@ -30,6 +30,7 @@ export interface Supplier {
   id: string
   name: string
   meal_unit_price: number
+  transportation_fee: number
 }
 
 export interface CashEntry {
@@ -56,6 +57,7 @@ export interface MealOrder {
   supplier_id: string
   meals_count: number
   unit_price_snapshot: number
+  transportation_fee_snapshot?: number
 }
 
 export interface MealOrderLog {
@@ -167,7 +169,10 @@ export async function getSupplierBalances(): Promise<SupplierBalance[]> {
 }
 
 export async function getSuppliers(): Promise<Supplier[]> {
-  const { data, error } = await supabase.from('suppliers').select('*')
+  const { data, error } = await supabase
+    .from('suppliers')
+    .select('id, name, meal_unit_price, transportation_fee')
+    .neq('name', 'Transportation')
 
   if (error) {
     console.error('Error fetching suppliers:', error)
@@ -268,11 +273,33 @@ export async function upsertMealOrder(order: MealOrder): Promise<boolean> {
       supplier_id: order.supplier_id,
       meals_count: order.meals_count,
       unit_price_snapshot: order.unit_price_snapshot,
+      transportation_fee_snapshot: order.transportation_fee_snapshot || 0,
     },
   ])
 
   if (error) {
     console.error('Error upserting meal order:', error)
+    return false
+  }
+  return true
+}
+
+// Update supplier defaults
+export async function updateSupplierDefaults(
+  supplierId: string,
+  mealUnitPrice: number,
+  transportationFee: number
+): Promise<boolean> {
+  const { error } = await supabase
+    .from('suppliers')
+    .update({
+      meal_unit_price: mealUnitPrice,
+      transportation_fee: transportationFee,
+    })
+    .eq('id', supplierId)
+
+  if (error) {
+    console.error('Error updating supplier defaults:', error)
     return false
   }
   return true

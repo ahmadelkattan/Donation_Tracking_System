@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { upsertMealOrder } from '@/lib/api'
+import { upsertMealOrder, updateSupplierDefaults } from '@/lib/api'
 import { Save } from 'lucide-react'
 
 interface Supplier {
   id: string
   name: string
   meal_unit_price: number
+  transportation_fee: number
 }
 
 interface MealOrdersTabProps {
@@ -20,6 +21,7 @@ interface OrderRow {
   supplier_id: string
   meals_count: string
   unit_price: string
+  transportation_fee: string
 }
 
 export default function MealOrdersTab({ suppliers, onToast }: MealOrdersTabProps) {
@@ -36,6 +38,7 @@ export default function MealOrdersTab({ suppliers, onToast }: MealOrdersTabProps
               supplier_id: s.id,
               meals_count: '0',
               unit_price: (s.meal_unit_price ?? 0).toString(),
+              transportation_fee: (s.transportation_fee ?? 0).toString(),
             }
         )
       })
@@ -48,7 +51,7 @@ export default function MealOrdersTab({ suppliers, onToast }: MealOrdersTabProps
 
   const updateOrder = (
       index: number,
-      field: 'meals_count' | 'unit_price',
+      field: 'meals_count' | 'unit_price' | 'transportation_fee',
       value: string
   ) => {
     setOrders((prev) => {
@@ -59,6 +62,7 @@ export default function MealOrdersTab({ suppliers, onToast }: MealOrdersTabProps
             supplier_id: suppliers[index]?.id ?? '',
             meals_count: '0',
             unit_price: (suppliers[index]?.meal_unit_price ?? 0).toString(),
+            transportation_fee: (suppliers[index]?.transportation_fee ?? 0).toString(),
           } as OrderRow)
 
       updated[index] = { ...current, [field]: value }
@@ -71,8 +75,10 @@ export default function MealOrdersTab({ suppliers, onToast }: MealOrdersTabProps
     try {
       for (let i = 0; i < orders.length; i++) {
         const order = orders[i]
+        const supplier = suppliers[i]
         const mealsCount = parseInt(order.meals_count) || 0
         const unitPrice = parseFloat(order.unit_price) || 0
+        const transportationFee = parseFloat(order.transportation_fee) || 0
 
         if (mealsCount > 0 || unitPrice > 0) {
           const success = await upsertMealOrder({
@@ -80,10 +86,24 @@ export default function MealOrdersTab({ suppliers, onToast }: MealOrdersTabProps
             supplier_id: order.supplier_id,
             meals_count: mealsCount,
             unit_price_snapshot: unitPrice,
+            transportation_fee_snapshot: transportationFee,
           })
 
           if (!success) {
             onToast(`Failed to save order for supplier ${i + 1}`, 'error')
+            setLoading(false)
+            return
+          }
+
+          // Update supplier defaults
+          const updateSuccess = await updateSupplierDefaults(
+            order.supplier_id,
+            unitPrice,
+            transportationFee
+          )
+
+          if (!updateSuccess) {
+            onToast(`Failed to update defaults for supplier ${i + 1}`, 'error')
             setLoading(false)
             return
           }
@@ -115,7 +135,7 @@ export default function MealOrdersTab({ suppliers, onToast }: MealOrdersTabProps
           <div key={supplier.id} className="bg-card border border-border rounded-lg p-4 space-y-3">
             <h3 className="font-semibold text-base">{supplier.name}</h3>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <div>
                 <label className="block text-xs font-medium mb-1">Meals Count</label>
                 <input
@@ -136,6 +156,18 @@ export default function MealOrdersTab({ suppliers, onToast }: MealOrdersTabProps
                   value={orders[index]?.unit_price ?? supplier.meal_unit_price.toString()}
                   onChange={(e) => updateOrder(index, 'unit_price', e.target.value)}
                   placeholder={supplier.meal_unit_price.toString()}
+                  className="w-full px-3 py-2 border border-input rounded text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium mb-1">Transportation</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={orders[index]?.transportation_fee ?? supplier.transportation_fee.toString()}
+                  onChange={(e) => updateOrder(index, 'transportation_fee', e.target.value)}
+                  placeholder={supplier.transportation_fee.toString()}
                   className="w-full px-3 py-2 border border-input rounded text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
