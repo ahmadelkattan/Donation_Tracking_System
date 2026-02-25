@@ -11,8 +11,9 @@ import { LogOut } from 'lucide-react'
 import MealOrdersTab from '@/components/admin/MealOrdersTab'
 import AdjustmentsTab from '@/components/admin/AdjustmentsTab'
 import OverviewTab from '@/components/admin/OverviewTab'
+import MealOrdersLog from '@/components/admin/MealOrdersLog'
 
-type TabType = 'orders' | 'adjustments' | 'overview'
+type TabType = 'orders' | 'adjustments' | 'overview' | 'log'
 
 export default function AdminPage() {
   const [username, setUsername] = useState<string | null>(null)
@@ -64,12 +65,12 @@ export default function AdminPage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 border-b border-border bg-card rounded-t-lg px-4 -mx-4 mb-2">
-          {(['orders', 'adjustments', 'overview'] as const).map((tab) => (
+        <div className="flex gap-1 border-b border-border bg-card rounded-t-lg px-4 -mx-4 mb-2 overflow-x-auto">
+          {(['orders', 'adjustments', 'overview', 'log'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-3 font-medium text-sm transition rounded-t-lg ${
+              className={`px-4 py-3 font-medium text-sm transition rounded-t-lg whitespace-nowrap ${
                 activeTab === tab
                   ? 'bg-background text-primary border-b-2 border-primary'
                   : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
@@ -78,6 +79,7 @@ export default function AdminPage() {
               {tab === 'orders' && 'Meal Orders'}
               {tab === 'adjustments' && 'Adjustments'}
               {tab === 'overview' && 'Overview'}
+              {tab === 'log' && 'Meal Orders Log'}
             </button>
           ))}
         </div>
@@ -91,6 +93,9 @@ export default function AdminPage() {
             <AdjustmentsTab suppliers={suppliers} onToast={addToast} />
           )}
           {activeTab === 'overview' && <OverviewTab />}
+          {activeTab === 'log' && (
+            <MealOrdersLog suppliers={suppliers} onToast={addToast} />
+          )}
         </div>
 
         <Button
