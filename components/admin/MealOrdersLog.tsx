@@ -163,22 +163,46 @@ export default function MealOrdersLog({ suppliers, onToast }: MealOrdersLogProps
 
           <div>
             <label className="block text-sm font-medium mb-2">From Date</label>
-            <input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
-              className="w-full px-3 py-2 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            />
+            <div className="flex gap-2">
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                className="flex-1 px-3 py-2 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+              {dateFrom && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setDateFrom('')}
+                  className="px-2"
+                >
+                  <X size={16} />
+                </Button>
+              )}
+            </div>
           </div>
 
           <div>
             <label className="block text-sm font-medium mb-2">To Date</label>
-            <input
-              type="date"
-              value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
-              className="w-full px-3 py-2 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            />
+            <div className="flex gap-2">
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                className="flex-1 px-3 py-2 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+              {dateTo && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setDateTo('')}
+                  className="px-2"
+                >
+                  <X size={16} />
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </div>
