@@ -391,3 +391,89 @@ export async function uploadImage(
 
   return publicUrl
 }
+
+// Meal Orders Log types and functions
+export interface MealOrdersLogEntry {
+  id: string
+  order_date: string
+  supplier_id: string
+  supplier_name: string
+  meals_count: number
+  unit_price_snapshot: number
+  created_at: string
+}
+
+export interface MealOrdersLogFilters {
+  supplier_id?: string | null
+  date_from?: string
+  date_to?: string
+}
+
+export async function getMealOrdersLog(
+  filters?: MealOrdersLogFilters
+): Promise<MealOrdersLogEntry[]> {
+  let query = supabase
+    .from('meal_orders')
+    .select('id, order_date, supplier_id, meals_count, unit_price_snapshot, created_at')
+
+  // Add supplier filter
+  if (filters?.supplier_id) {
+    query = query.eq('supplier_id', filters.supplier_id)
+  }
+
+  // Add date range filters
+  if (filters?.date_from) {
+    query = query.gte('order_date', filters.date_from)
+  }
+  if (filters?.date_to) {
+    query = query.lte('order_date', filters.date_to)
+  }
+
+  // Sort by order_date desc, then created_at desc
+  query = query.order('order_date', { ascending: false }).order('created_at', { ascending: false })
+
+  const { data, error } = await query
+
+  if (error) {
+    console.error('Error fetching meal orders log:', error)
+    return []
+  }
+
+  // Get supplier names
+  const uniqueSupplierIds = [...new Set((data || []).map((d) => d.supplier_id))]
+  const { data: supplierData } = await supabase
+    .from('suppliers')
+    .select('id, name')
+    .in('id', uniqueSupplierIds)
+
+  const supplierMap = new Map(supplierData?.map((s) => [s.id, s.name]) || [])
+
+  return (data || []).map((order) => ({
+    ...order,
+    supplier_name: supplierMap.get(order.supplier_id) || 'Unknown',
+  }))
+}
+
+export async function updateMealOrder(
+  id: string,
+  payload: {
+    meals_count?: number
+    unit_price_snapshot?: number
+  }
+): Promise<boolean> {
+  const updateData: any = {}
+  if (payload.meals_count !== undefined) {
+    updateData.meals_count = payload.meals_count
+  }
+  if (payload.unit_price_snapshot !== undefined) {
+    updateData.unit_price_snapshot = payload.unit_price_snapshot
+  }
+
+  const { error } = await supabase.from('meal_orders').update(updateData).eq('id', id)
+
+  if (error) {
+    console.error('Error updating meal order:', error)
+    return false
+  }
+  return true
+}
