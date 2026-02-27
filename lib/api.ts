@@ -478,16 +478,22 @@ export async function updateMealOrder(
   return true
 }
 
-// Delete instapay entry
-export async function deleteInstapayEntry(entryId: string, imagePath: string): Promise<{ success: boolean; error?: string }> {
+// Delete instapay entry (Server Action)
+export const deleteInstapayEntry = async (entryId: string, imagePath: string): Promise<{ success: boolean; error?: string }> => {
+  'use server'
+
   try {
+    console.log('[v0] Deleting instapay entry:', { entryId, imagePath })
+    
     // First, delete the image from Supabase Storage
     const { error: storageError } = await supabase.storage.from('Instapay').remove([imagePath])
 
     if (storageError) {
-      console.error('Error deleting image from storage:', storageError)
+      console.error('[v0] Error deleting image from storage:', storageError)
       return { success: false, error: 'Failed to delete image' }
     }
+
+    console.log('[v0] Image deleted successfully')
 
     // Then, delete the database entry
     const { error: dbError } = await supabase
@@ -496,13 +502,14 @@ export async function deleteInstapayEntry(entryId: string, imagePath: string): P
       .eq('id', entryId)
 
     if (dbError) {
-      console.error('Error deleting instapay entry from database:', dbError)
+      console.error('[v0] Error deleting instapay entry from database:', dbError)
       return { success: false, error: 'Failed to delete donation record' }
     }
 
+    console.log('[v0] Database entry deleted successfully')
     return { success: true }
   } catch (error) {
-    console.error('Error in deleteInstapayEntry:', error)
+    console.error('[v0] Error in deleteInstapayEntry:', error)
     return { success: false, error: 'An unexpected error occurred' }
   }
 }

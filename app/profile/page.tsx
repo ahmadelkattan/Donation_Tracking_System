@@ -82,11 +82,16 @@ export default function ProfilePage() {
     }
 
     const handleDeleteEntry = async () => {
-        if (!selectedEntryId || !selectedEntryPath || !username) return
+        if (!selectedEntryId || !selectedEntryPath || !username) {
+            console.log('[v0] Delete handler missing required params:', { selectedEntryId, selectedEntryPath, username })
+            return
+        }
 
         setIsDeleting(true)
         try {
+            console.log('[v0] Calling deleteInstapayEntry with:', { selectedEntryId, selectedEntryPath })
             const result = await deleteInstapayEntry(selectedEntryId, selectedEntryPath)
+            console.log('[v0] Delete result:', result)
             
             if (result.success) {
                 addToast('Donation deleted successfully', 'success')
@@ -102,7 +107,7 @@ export default function ProfilePage() {
                 addToast(result.error || 'Failed to delete donation', 'error')
             }
         } catch (error) {
-            console.error('Error deleting entry:', error)
+            console.error('[v0] Error deleting entry:', error)
             addToast('Failed to delete donation', 'error')
         } finally {
             setIsDeleting(false)
