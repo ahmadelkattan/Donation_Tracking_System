@@ -276,34 +276,36 @@ export default function ProfilePage() {
             {/* Image Modal */}
             {selectedImage && (
                 <div
-                    className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 flex-col"
+                    className="fixed inset-0 bg-black bg-opacity-75 flex flex-col items-center justify-center z-50 p-4 overflow-y-auto"
                     onClick={() => {
                         setSelectedImage(null)
                         setShowDeleteConfirm(false)
                     }}
                 >
-                    <div className="relative w-full max-w-sm flex-1 flex items-center" onClick={(e) => e.stopPropagation()}>
-                        <button
-                            onClick={() => {
-                                setSelectedImage(null)
-                                setShowDeleteConfirm(false)
-                            }}
-                            className="absolute top-2 right-2 bg-white rounded-full p-1 hover:bg-gray-100 z-10"
-                        >
-                            <X size={20} className="text-black" />
-                        </button>
-                        <Image
-                            src={selectedImage || "/placeholder.svg"}
-                            alt="Full size"
-                            width={500}
-                            height={500}
-                            className="w-full rounded"
-                        />
-                    </div>
+                    <div className="w-full max-w-sm flex flex-col gap-4 my-auto" onClick={(e) => e.stopPropagation()}>
+                        <div className="relative w-full flex items-center justify-center">
+                            <button
+                                onClick={() => {
+                                    setSelectedImage(null)
+                                    setShowDeleteConfirm(false)
+                                }}
+                                className="absolute top-2 right-2 bg-white rounded-full p-1 hover:bg-gray-100 z-10"
+                            >
+                                <X size={20} className="text-black" />
+                            </button>
+                            <div className="w-full max-h-[60vh] flex items-center justify-center overflow-hidden rounded">
+                                <Image
+                                    src={selectedImage || "/placeholder.svg"}
+                                    alt="Full size"
+                                    width={500}
+                                    height={500}
+                                    className="w-full h-auto object-contain"
+                                />
+                            </div>
+                        </div>
 
-                    {/* Delete Button */}
-                    {!showDeleteConfirm && (
-                        <div className="w-full max-w-sm mt-4" onClick={(e) => e.stopPropagation()}>
+                        {/* Delete Button */}
+                        {!showDeleteConfirm && (
                             <Button
                                 onClick={() => setShowDeleteConfirm(true)}
                                 variant="destructive"
@@ -312,13 +314,11 @@ export default function ProfilePage() {
                             >
                                 Delete Donation
                             </Button>
-                        </div>
-                    )}
+                        )}
 
-                    {/* Delete Confirmation Modal */}
-                    {showDeleteConfirm && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end z-50" onClick={(e) => e.stopPropagation()}>
-                            <div className="w-full bg-background rounded-t-3xl p-6 space-y-4 max-w-sm mx-auto" onClick={(e) => e.stopPropagation()}>
+                        {/* Delete Confirmation Modal */}
+                        {showDeleteConfirm && (
+                            <div className="w-full bg-background rounded-2xl p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
                                 <h3 className="text-lg font-semibold text-foreground">Delete Donation?</h3>
                                 <p className="text-muted-foreground">Are you sure you want to delete this donation entry? This action cannot be undone.</p>
                                 <div className="flex gap-3 pt-4">
@@ -340,8 +340,8 @@ export default function ProfilePage() {
                                     </Button>
                                 </div>
                             </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
             )}
 
