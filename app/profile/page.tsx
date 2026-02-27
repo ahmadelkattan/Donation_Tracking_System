@@ -293,7 +293,7 @@ export default function ProfilePage() {
                             >
                                 <X size={20} className="text-black" />
                             </button>
-                            <div className="w-full max-h-[60vh] flex items-center justify-center overflow-hidden rounded">
+                            <div className="w-full max-h-[85vh] flex items-center justify-center overflow-hidden rounded">
                                 <Image
                                     src={selectedImage || "/placeholder.svg"}
                                     alt="Full size"
