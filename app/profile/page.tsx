@@ -7,6 +7,7 @@ import { LayoutWrapper } from '@/components/LayoutWrapper'
 import { Toast } from '@/components/Toast'
 import { useToastMessage } from '@/hooks/useToastMessage'
 import { getInstapayEntries, getCashEntries, getPaymentsMadeByUser, type UserPaymentLog } from '@/lib/api'
+import { deleteInstapayEntry } from '@/lib/actions'
 import { LogOut, X, Loader2, ChevronDown } from 'lucide-react'
 import Image from 'next/image'
 
@@ -14,6 +15,7 @@ interface InstapayEntry {
     id: string
     amount: number
     image_url: string
+    image_path: string
     created_at: string
 }
 
@@ -31,9 +33,13 @@ export default function ProfilePage() {
     const [payments, setPayments] = useState<UserPaymentLog[]>([])
     const [loading, setLoading] = useState(true)
     const [selectedImage, setSelectedImage] = useState<string | null>(null)
+    const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null)
+    const [selectedEntryPath, setSelectedEntryPath] = useState<string | null>(null)
     const [expandedInstapay, setExpandedInstapay] = useState(false)
     const [expandedCash, setExpandedCash] = useState(false)
     const [expandedPayments, setExpandedPayments] = useState(false)
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+    const [isDeleting, setIsDeleting] = useState(false)
     const router = useRouter()
     const { toasts, addToast, removeToast } = useToastMessage()
 
@@ -76,6 +82,47 @@ export default function ProfilePage() {
         router.push('/login')
     }
 
+    const handleDeleteEntry = async () => {
+        console.log('[delete] clicked')
+        
+        if (!selectedEntryId || !selectedEntryPath) {
+            addToast('Cannot delete: missing entry id or image path', 'error')
+            return
+        }
+
+        setIsDeleting(true)
+        try {
+            const result = await deleteInstapayEntry(selectedEntryId, selectedEntryPath)
+            
+            if (result.success) {
+                addToast('Donation deleted successfully', 'success')
+                setSelectedImage(null)
+                setShowDeleteConfirm(false)
+                setSelectedEntryId(null)
+                setSelectedEntryPath(null)
+                
+                // Refresh the instapay entries
+                if (username) {
+                    const updatedEntries = await getInstapayEntries(username)
+                    setInstapayEntries(updatedEntries)
+                }
+            } else {
+                addToast(result.error || 'Failed to delete donation', 'error')
+            }
+        } catch (error) {
+            console.error('[delete] exception:', error)
+            addToast('Failed to delete donation', 'error')
+        } finally {
+            setIsDeleting(false)
+        }
+    }
+
+    const handleImageClick = (entry: InstapayEntry) => {
+        setSelectedImage(entry.image_url)
+        setSelectedEntryId(entry.id)
+        setSelectedEntryPath(entry.image_path)
+    }
+
     if (!username) return null
 
     return (
@@ -113,7 +160,7 @@ export default function ProfilePage() {
                                         {instapayEntries.map((entry) => (
                                             <button
                                                 key={entry.id}
-                                                onClick={() => setSelectedImage(entry.image_url)}
+                                                onClick={() => handleImageClick(entry)}
                                                 className="relative aspect-square rounded-xl overflow-hidden border border-border hover:border-primary transition"
                                             >
                                                 <Image
@@ -237,23 +284,71 @@ export default function ProfilePage() {
             {/* Image Modal */}
             {selectedImage && (
                 <div
-                    className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
-                    onClick={() => setSelectedImage(null)}
+                    className="fixed inset-0 bg-black bg-opacity-75 flex flex-col items-center justify-center z-50 p-4 overflow-y-auto"
+                    onClick={() => {
+                        setSelectedImage(null)
+                        setShowDeleteConfirm(false)
+                    }}
                 >
-                    <div className="relative w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
-                        <button
-                            onClick={() => setSelectedImage(null)}
-                            className="absolute top-2 right-2 bg-white rounded-full p-1 hover:bg-gray-100"
-                        >
-                            <X size={20} className="text-black" />
-                        </button>
-                        <Image
-                            src={selectedImage || "/placeholder.svg"}
-                            alt="Full size"
-                            width={500}
-                            height={500}
-                            className="w-full rounded"
-                        />
+                    <div className="w-full max-w-sm flex flex-col gap-4 my-auto" onClick={(e) => e.stopPropagation()}>
+                        <div className="relative w-full flex items-center justify-center">
+                            <button
+                                onClick={() => {
+                                    setSelectedImage(null)
+                                    setShowDeleteConfirm(false)
+                                }}
+                                className="absolute top-2 right-2 bg-white rounded-full p-1 hover:bg-gray-100 z-10"
+                            >
+                                <X size={20} className="text-black" />
+                            </button>
+                            <div className="w-full max-h-[85vh] flex items-center justify-center overflow-hidden rounded">
+                                <Image
+                                    src={selectedImage || "/placeholder.svg"}
+                                    alt="Full size"
+                                    width={500}
+                                    height={500}
+                                    className="w-full h-auto object-contain"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Delete Button */}
+                        {!showDeleteConfirm && (
+                            <Button
+                                onClick={() => setShowDeleteConfirm(true)}
+                                variant="destructive"
+                                className="w-full rounded-lg"
+                                disabled={isDeleting}
+                            >
+                                Delete Donation
+                            </Button>
+                        )}
+
+                        {/* Delete Confirmation Modal */}
+                        {showDeleteConfirm && (
+                            <div className="w-full bg-background rounded-2xl p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+                                <h3 className="text-lg font-semibold text-foreground">Delete Donation?</h3>
+                                <p className="text-muted-foreground">Are you sure you want to delete this donation entry? This action cannot be undone.</p>
+                                <div className="flex gap-3 pt-4">
+                                    <Button
+                                        onClick={() => setShowDeleteConfirm(false)}
+                                        variant="outline"
+                                        className="flex-1"
+                                        disabled={isDeleting}
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        onClick={handleDeleteEntry}
+                                        variant="destructive"
+                                        className="flex-1"
+                                        disabled={isDeleting}
+                                    >
+                                        {isDeleting ? 'Deleting...' : 'Delete'}
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}

@@ -41,6 +41,7 @@ export interface CashEntry {
 export interface InstapayItem {
   amount: number
   image_url: string
+  image_path: string
 }
 
 export interface SupplierPayment {
@@ -50,6 +51,7 @@ export interface SupplierPayment {
   amount: number
   note?: string
   image_url?: string
+  image_path?: string
 }
 
 export interface MealOrder {
@@ -234,6 +236,7 @@ export async function addInstapayEntries(
     username,
     amount: item.amount,
     image_url: item.image_url,
+    image_path: item.image_path,
   }))
 
   const { error } = await supabase.from('instapay_entries').insert(formattedItems)
@@ -255,6 +258,7 @@ export async function addSupplierPayment(payment: SupplierPayment): Promise<bool
       amount: payment.amount,
       note: payment.note || null,
       image_url: payment.image_url || null,
+      image_path: payment.image_path || null,
     },
   ])
 
@@ -371,11 +375,8 @@ export async function getMealOrdersForSupplier(
 export async function uploadImage(
   file: File,
   username: string
-): Promise<string | null> {
-  const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD
-  const random = Math.random().toString(36).substring(2, 10)
-  const fileName = `${today}/${random}.jpg`
-  const filePath = `${username}/${fileName}`
+): Promise<{ publicUrl: string; filePath: string } | null> {
+  const filePath = `instapay/${Date.now()}-${file.name}`
 
   const { error } = await supabase.storage.from('Instapay').upload(filePath, file)
 
@@ -389,7 +390,7 @@ export async function uploadImage(
     data: { publicUrl },
   } = supabase.storage.from('Instapay').getPublicUrl(filePath)
 
-  return publicUrl
+  return { publicUrl, filePath }
 }
 
 // Meal Orders Log types and functions
@@ -477,3 +478,4 @@ export async function updateMealOrder(
   }
   return true
 }
+
