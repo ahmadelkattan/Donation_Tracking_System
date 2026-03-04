@@ -96,8 +96,8 @@ export default function AddInstapayPage() {
 
       for (const image of images) {
         // Upload image
-        const imageUrl = await uploadImage(image.file, username)
-        if (!imageUrl) {
+        const uploadResult = await uploadImage(image.file, username)
+        if (!uploadResult) {
           addToast('Failed to upload one or more images', 'error')
           setLoading(false)
           return
@@ -105,7 +105,8 @@ export default function AddInstapayPage() {
 
         instapayItems.push({
           amount: parseFloat(image.manualAmount),
-          image_url: imageUrl,
+          image_url: uploadResult.publicUrl,
+          image_path: uploadResult.filePath,
         })
       }
 
