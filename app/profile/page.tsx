@@ -83,16 +83,16 @@ export default function ProfilePage() {
     }
 
     const handleDeleteEntry = async () => {
-        if (!selectedEntryId || !selectedEntryPath || !username) {
-            console.log('[v0] Delete handler missing required params:', { selectedEntryId, selectedEntryPath, username })
+        console.log('[delete] clicked')
+        
+        if (!selectedEntryId || !selectedEntryPath) {
+            addToast('Cannot delete: missing entry id or image path', 'error')
             return
         }
 
         setIsDeleting(true)
         try {
-            console.log('[v0] Calling deleteInstapayEntry with:', { selectedEntryId, selectedEntryPath })
             const result = await deleteInstapayEntry(selectedEntryId, selectedEntryPath)
-            console.log('[v0] Delete result:', result)
             
             if (result.success) {
                 addToast('Donation deleted successfully', 'success')
@@ -102,13 +102,15 @@ export default function ProfilePage() {
                 setSelectedEntryPath(null)
                 
                 // Refresh the instapay entries
-                const updatedEntries = await getInstapayEntries(username)
-                setInstapayEntries(updatedEntries)
+                if (username) {
+                    const updatedEntries = await getInstapayEntries(username)
+                    setInstapayEntries(updatedEntries)
+                }
             } else {
                 addToast(result.error || 'Failed to delete donation', 'error')
             }
         } catch (error) {
-            console.error('[v0] Error deleting entry:', error)
+            console.error('[delete] exception:', error)
             addToast('Failed to delete donation', 'error')
         } finally {
             setIsDeleting(false)
