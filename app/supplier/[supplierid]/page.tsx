@@ -31,7 +31,12 @@ export default function PaySupplierPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
   const params = useParams()
-  const supplierId = params.supplierid as string
+  const supplierId = (
+    params.supplier_id ??
+    params.supplierId ??
+    params.supplierid ??
+    params.id
+  ) as string
   const { toasts, addToast, removeToast } = useToastMessage()
 
   useEffect(() => {
@@ -134,7 +139,33 @@ export default function PaySupplierPage() {
     }
   }
 
-  if (!username || !supplier) return null
+  if (!username) return null
+
+  if (!supplierId) {
+    return (
+      <LayoutWrapper username={username} showNav={false}>
+        <div className="flex-1 flex flex-col p-4 gap-6 items-center justify-center">
+          <h1 className="text-2xl font-bold">Debug: Route Parameters</h1>
+          <pre className="bg-muted p-4 rounded-lg text-sm overflow-auto max-w-full">
+            {JSON.stringify(params, null, 2)}
+          </pre>
+          <Button onClick={() => router.back()}>Back</Button>
+        </div>
+      </LayoutWrapper>
+    )
+  }
+
+  if (!supplier) {
+    return (
+      <LayoutWrapper username={username} showNav={false}>
+        <div className="flex-1 flex flex-col p-4 gap-6 items-center justify-center">
+          <h1 className="text-2xl font-bold">Supplier not found</h1>
+          <p className="text-muted-foreground">Supplier not found for id: {supplierId}</p>
+          <Button onClick={() => router.back()}>Back</Button>
+        </div>
+      </LayoutWrapper>
+    )
+  }
 
   return (
     <LayoutWrapper username={username} showNav={false}>
