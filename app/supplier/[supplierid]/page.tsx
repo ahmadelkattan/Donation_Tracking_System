@@ -1,6 +1,7 @@
 'use client'
 
-import React from 'react'
+import React from "react"
+
 import { useEffect, useRef, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -11,6 +12,7 @@ import { getSuppliers, addSupplierPayment, uploadImage } from '@/lib/api'
 import { ArrowLeft, X, Upload } from 'lucide-react'
 import Image from 'next/image'
 import { extractAmountFromImage } from '@/lib/extractAmount'
+
 
 interface Supplier {
   id: string
@@ -27,17 +29,10 @@ export default function PaySupplierPage() {
   const [image, setImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-
   const router = useRouter()
   const params = useParams()
+  const supplierId = params.supplierid as string
   const { toasts, addToast, removeToast } = useToastMessage()
-
-  // IMPORTANT: support multiple possible dynamic segment names
-  const supplierId =
-    (params.supplier_id ??
-      params.supplierid ??
-      params.supplierId ??
-      params.id) as string | undefined
 
   useEffect(() => {
     const stored = localStorage.getItem('username')
@@ -49,23 +44,13 @@ export default function PaySupplierPage() {
   }, [router])
 
   useEffect(() => {
-    if (!supplierId) return
-
     const fetchSupplier = async () => {
       const suppliers = await getSuppliers()
-      console.log('[pay] params:', params)
-      console.log('[pay] supplierId:', supplierId)
-      console.log(
-        '[pay] suppliers ids:',
-        suppliers.map((s) => s.id)
-      )
-
       const found = suppliers.find((s) => s.id === supplierId)
-      setSupplier((found as Supplier) || null)
+      setSupplier(found || null)
     }
-
     fetchSupplier()
-  }, [supplierId, params])
+  }, [supplierId])
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -75,6 +60,7 @@ export default function PaySupplierPage() {
     const preview = URL.createObjectURL(file)
     setImagePreview(preview)
 
+    // auto-detect amount
     try {
       const detected = await extractAmountFromImage(file)
       if (detected) setAmount(String(detected))
@@ -83,8 +69,11 @@ export default function PaySupplierPage() {
     }
   }
 
+
   const removeImage = () => {
-    if (imagePreview) URL.revokeObjectURL(imagePreview)
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview)
+    }
     setImage(null)
     setImagePreview(null)
   }
@@ -145,60 +134,31 @@ export default function PaySupplierPage() {
     }
   }
 
-  // Never render blank pages again:
-  if (!username) return null
-
-  if (!supplierId) {
-    return (
-      <LayoutWrapper username={username} showNav={false}>
-        <div className="p-4 space-y-3">
-          <button onClick={() => router.back()} className="text-primary underline">
-            Back
-          </button>
-          <div className="text-sm">Missing supplier id in URL.</div>
-          <pre className="text-xs opacity-70 bg-muted p-3 rounded-lg overflow-auto">
-            {JSON.stringify(params, null, 2)}
-          </pre>
-        </div>
-        <Toast toasts={toasts} onRemove={removeToast} />
-      </LayoutWrapper>
-    )
-  }
-
-  if (!supplier) {
-    return (
-      <LayoutWrapper username={username} showNav={false}>
-        <div className="p-4 space-y-3">
-          <button onClick={() => router.back()} className="text-primary underline">
-            Back
-          </button>
-          <div className="text-sm">Supplier not found for id: {supplierId}</div>
-          <div className="text-xs opacity-70">
-            Open DevTools Console and read the [pay] logs to see what suppliers are returned.
-          </div>
-        </div>
-        <Toast toasts={toasts} onRemove={removeToast} />
-      </LayoutWrapper>
-    )
-  }
+  if (!username || !supplier) return null
 
   return (
     <LayoutWrapper username={username} showNav={false}>
       <div className="flex-1 flex flex-col p-4 gap-6">
-        <button onClick={() => router.back()} className="flex items-center gap-2 text-primary hover:underline w-fit">
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-2 text-primary hover:underline w-fit"
+        >
           <ArrowLeft size={20} />
           Back
         </button>
 
         <h1 className="text-2xl font-bold">Pay Supplier: {supplier.name}</h1>
 
+        {/* Method Selection */}
         <div className="space-y-3">
           <label className="block text-sm font-medium">Pay From Which Balance</label>
           <div className="flex gap-2">
             <button
               onClick={() => setMethod('instapay')}
               className={`flex-1 py-3 px-4 rounded-lg border-2 transition font-medium ${
-                method === 'instapay' ? 'border-primary bg-primary text-white' : 'border-border hover:border-primary'
+                method === 'instapay'
+                  ? 'border-primary bg-primary text-white'
+                  : 'border-border hover:border-primary'
               }`}
             >
               Instapay
@@ -206,7 +166,9 @@ export default function PaySupplierPage() {
             <button
               onClick={() => setMethod('cash')}
               className={`flex-1 py-3 px-4 rounded-lg border-2 transition font-medium ${
-                method === 'cash' ? 'border-primary bg-primary text-white' : 'border-border hover:border-primary'
+                method === 'cash'
+                  ? 'border-primary bg-primary text-white'
+                  : 'border-border hover:border-primary'
               }`}
             >
               Cash
@@ -214,6 +176,7 @@ export default function PaySupplierPage() {
           </div>
         </div>
 
+        {/* Amount */}
         <div>
           <label className="block text-sm font-medium mb-2">Amount</label>
           <input
@@ -226,13 +189,16 @@ export default function PaySupplierPage() {
           />
         </div>
 
+        {/* Instapay Image Upload */}
         {method === 'instapay' && (
           <div>
-            <label className="block text-sm font-medium mb-2">Payment Screenshot (optional)</label>
+            <label className="block text-sm font-medium mb-2">
+              Payment Screenshot (optional)
+            </label>
             {imagePreview ? (
               <div className="relative w-full">
                 <Image
-                  src={imagePreview || '/placeholder.svg'}
+                  src={imagePreview || "/placeholder.svg"}
                   alt="Payment screenshot"
                   width={400}
                   height={300}
@@ -257,22 +223,48 @@ export default function PaySupplierPage() {
           </div>
         )}
 
-        <div>
-          <label className="block text-sm font-medium mb-2">Note (optional)</label>
-          <textarea
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="Add a note..."
-            className="w-full px-4 py-3 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none"
-            rows={method === 'cash' ? 3 : 2}
-          />
-        </div>
+        {/* Cash Note */}
+        {method === 'cash' && (
+          <div>
+            <label className="block text-sm font-medium mb-2">Note (optional)</label>
+            <textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Add a note..."
+              className="w-full px-4 py-3 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+              rows={3}
+            />
+          </div>
+        )}
 
-        <Button onClick={handleSubmit} disabled={loading || !amount} className="w-full h-12 text-base font-semibold mt-auto">
+        {method === 'instapay' && (
+          <div>
+            <label className="block text-sm font-medium mb-2">Note (optional)</label>
+            <textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Add a note..."
+              className="w-full px-4 py-3 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+              rows={2}
+            />
+          </div>
+        )}
+
+        <Button
+          onClick={handleSubmit}
+          disabled={loading || !amount}
+          className="w-full h-12 text-base font-semibold mt-auto"
+        >
           {loading ? 'Processing...' : 'Record Payment'}
         </Button>
 
-        <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileSelect}
+          className="hidden"
+        />
       </div>
 
       <Toast toasts={toasts} onRemove={removeToast} />
