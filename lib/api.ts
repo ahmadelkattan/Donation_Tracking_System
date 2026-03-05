@@ -51,7 +51,6 @@ export interface SupplierPayment {
   amount: number
   note?: string
   image_url?: string
-  image_path?: string
 }
 
 export interface MealOrder {
@@ -258,7 +257,6 @@ export async function addSupplierPayment(payment: SupplierPayment): Promise<bool
       amount: payment.amount,
       note: payment.note || null,
       image_url: payment.image_url || null,
-      image_path: payment.image_path || null,
     },
   ])
 
