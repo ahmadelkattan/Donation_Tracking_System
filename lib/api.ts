@@ -83,10 +83,10 @@ export async function getOverall(): Promise<OverallStats | null> {
 
 export async function getSupplierBalanceById(supplierId: string) {
   const { data, error } = await supabase
-      .from('v_supplier_balance')
-      .select('*')
-      .eq('supplier_id', supplierId)
-      .single()
+    .from('v_supplier_balance')
+    .select('*')
+    .eq('supplier_id', supplierId)
+    .single()
 
   if (error) {
     console.error('Error fetching supplier balance:', error)
@@ -108,13 +108,13 @@ export interface SupplierPaymentLog {
 }
 
 export async function getPaymentsForSupplier(
-    supplierName: string
+  supplierName: string
 ): Promise<SupplierPaymentLog[]> {
   const { data, error } = await supabase
-      .from('v_supplier_payments_log')
-      .select('*')
-      .eq('supplier_name', supplierName)
-      .order('payment_datetime', { ascending: false })
+    .from('v_supplier_payments_log')
+    .select('*')
+    .eq('supplier_name', supplierName)
+    .order('payment_datetime', { ascending: false })
 
   if (error) {
     console.error('Error fetching supplier payments:', error)
@@ -136,10 +136,10 @@ export interface UserPaymentLog {
 
 export async function getPaymentsMadeByUser(username: string): Promise<UserPaymentLog[]> {
   const { data, error } = await supabase
-      .from('v_user_payments_log')
-      .select('*')
-      .eq('paid_by_username', username)
-      .order('created_at', { ascending: false })
+    .from('v_user_payments_log')
+    .select('*')
+    .eq('paid_by_username', username)
+    .order('created_at', { ascending: false })
 
   if (error) {
     console.error('Error fetching user payments:', error)
@@ -173,7 +173,7 @@ export async function getSuppliers(): Promise<Supplier[]> {
   const { data, error } = await supabase
     .from('suppliers')
     .select('id, name, meal_unit_price, transportation_fee')
-    .neq('name', 'Transportation')
+
 
   if (error) {
     console.error('Error fetching suppliers:', error)
